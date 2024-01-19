@@ -19,10 +19,16 @@ class MainScreenViewModel : ViewModel() {
     private val repository: TaskRepository = TaskRepositoryImpl()
     var uiState by mutableStateOf(MainScreenUiState())
     val getAllCategoriesUseCase=GetAllCategoriesUseCaseImpl(repository)
+    val getAllTaskUseCaseImpl=GetAllTaskUseCaseImpl(repository)
 
     init {
         getAllCategoriesUseCase().onEach {
             uiState=uiState.copy(categories = it)
+        }.launchIn(viewModelScope)
+    }
+    init {
+        getAllTaskUseCaseImpl().onEach {
+            uiState=uiState.copy(tasks = it)
         }.launchIn(viewModelScope)
     }
 }

@@ -67,7 +67,7 @@ fun FABComponent(
             ) {
                 Icon(
                     painter = painterResource(
-                        id = if (isCLick) R.drawable.plus_icon
+                        id = if (!isCLick) R.drawable.plus_icon
                         else R.drawable.exit_icon
                     ), contentDescription = null,
                     tint = if (isCLick) Color.White else TaskerBlue

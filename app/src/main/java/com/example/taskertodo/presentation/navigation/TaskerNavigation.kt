@@ -38,7 +38,8 @@ fun TaskerNavigation() {
                 onUpdateLocalDate = addTaskViewModel::updateDate,
                 onUpdateTaskTitle = addTaskViewModel::updateTitleText,
                 onUpdateLocalTime = addTaskViewModel::updateTime,
-                selectCategory = addTaskViewModel::updateTaskCategory
+                selectCategory = addTaskViewModel::updateTaskCategory,
+                onUpdateTaskColor = addTaskViewModel::updateTaskCategoryColor
             )
         }
         composable(addCategoryScreenRoute) {

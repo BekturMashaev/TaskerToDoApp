@@ -1,5 +1,6 @@
 package com.example.taskertodo.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -46,8 +48,8 @@ fun CategoryListPreview() {
                     color = "",
                 ),
             ),
-            innerPadding = PaddingValues(dp0),
-            selectCategory = {}
+            selectCategory = {},
+            isListForMainScreen = true
         )
     }
 }
@@ -57,17 +59,21 @@ fun CategoryList(
     modifier: Modifier = Modifier,
     categoryList: List<CategoryModel>,
     selectCategory: (CategoryModel) -> Unit,
-    innerPadding: PaddingValues
+    isListForMainScreen: Boolean
 ) {
     LazyColumn(
-        modifier = modifier.padding(innerPadding)
+        modifier = modifier
+            .fillMaxSize()
     ) {
         items(
             items = categoryList,
             key = { item -> item.id }
         ) { item ->
-            CategoryItem(model = item)
-            selectCategory(item)
+            CategoryItem(
+                model = item,
+                onSelectCategory = selectCategory,
+                isListForMainScreen = isListForMainScreen
+            )
         }
     }
 }
@@ -75,41 +81,54 @@ fun CategoryList(
 @Composable
 fun CategoryItem(
     model: CategoryModel,
+    onSelectCategory: (CategoryModel) -> Unit,
+    isListForMainScreen: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color.parse(model.color)),
-        modifier = modifier
-            .fillMaxWidth()
-            .height(dp70)
-            .padding(dp5)
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = if (isListForMainScreen) Alignment.End
+        else Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-        ) {
-            Column {
-                Text(
-                    text = model.title,
-                    modifier = modifier.padding(top = dp12, start = dp14),
-                    fontSize = sp19,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color.parse(model.color)),
+            modifier = Modifier
+                .fillMaxWidth(
+                    if (isListForMainScreen) 0.9f
+                    else 1f
                 )
-                Spacer(modifier = modifier.weight(1f))
-                IconButton(
-                    onClick = {},
-                    modifier = modifier.padding(top = dp20, end = dp20, bottom = dp20)
-                ) {
-                    CircleColorComponent(
-                        modifier = modifier
-                            .size(dp28),
-                        color = Color.White
+                .height(dp70)
+                .padding(dp5)
+                .clickable {
+                    onSelectCategory(model)
+                }
+        ) {
+            Box(
+                modifier = modifier.fillMaxSize(),
+            ) {
+                Column {
+                    Text(
+                        text = model.title,
+                        modifier = modifier.padding(top = dp12, start = dp14),
+                        fontSize = sp19,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
-
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = null
-                    )
+                    Spacer(modifier = modifier.weight(1f))
+                    IconButton(
+                        onClick = {},
+                        modifier = modifier.padding(top = dp20, end = dp20, bottom = dp20)
+                    ) {
+                        CircleColorComponent(
+                            modifier = modifier
+                                .size(dp28),
+                            color = Color.White
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null
+                        )
+                    }
                 }
             }
         }

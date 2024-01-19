@@ -17,9 +17,11 @@ class TaskRepositoryImpl: TaskRepository {
         )
     }
 
-    override fun getAllTasks(): List<TaskModel> {
+    override fun getAllTasks(): Flow<List<TaskModel>> {
         return dao.getAllTasks().map {
-            it.toDataModel()
+            it.map{model->
+                model.toDataModel()
+            }
         }
     }
 

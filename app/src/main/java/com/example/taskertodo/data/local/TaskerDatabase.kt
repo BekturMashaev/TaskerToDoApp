@@ -10,7 +10,7 @@ import com.example.taskertodo.data.local.models.TaskModelCache
         TaskModelCache::class,
         CategoryModelCache::class
     ],
-    version = 1,
+    version = 3,
 )
 abstract class TaskerDatabase : RoomDatabase() {
     abstract fun getTaskDao(): TaskerDao

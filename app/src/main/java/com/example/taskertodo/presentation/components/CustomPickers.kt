@@ -1,7 +1,6 @@
 package com.example.taskertodo.presentation.components
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,20 +20,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.composetaskerapp.presentation.components.InfiniteItemsPicker
-import com.example.composetaskerapp.presentation.components.currentDay
-import com.example.composetaskerapp.presentation.components.currentHour
-import com.example.composetaskerapp.presentation.components.currentMinute
-import com.example.composetaskerapp.presentation.components.currentMonth
-import com.example.composetaskerapp.presentation.components.currentYear
-import com.example.composetaskerapp.presentation.components.days
-import com.example.composetaskerapp.presentation.components.hours
-import com.example.composetaskerapp.presentation.components.minutes
-import com.example.composetaskerapp.presentation.components.monthsNames
-import com.example.composetaskerapp.presentation.components.years
+import com.example.taskerapp.presentation.components.InfiniteItemsPicker
+import com.example.taskerapp.presentation.components.currentDay
+import com.example.taskerapp.presentation.components.currentHour
+import com.example.taskerapp.presentation.components.currentMinute
+import com.example.taskerapp.presentation.components.currentMonth
+import com.example.taskerapp.presentation.components.currentYear
+import com.example.taskerapp.presentation.components.days
+import com.example.taskerapp.presentation.components.hours
+import com.example.taskerapp.presentation.components.minutes
+import com.example.taskerapp.presentation.components.monthsNames
+import com.example.taskerapp.presentation.components.monthsNumber
+import com.example.taskerapp.presentation.components.years
 import com.example.taskertodo.R
 import com.example.taskertodo.presentation.theme.TaskerBlue
 import com.example.taskertodo.presentation.theme.dp20
@@ -51,6 +50,7 @@ fun CustomDatePicker(
     modifier: Modifier = Modifier,
     onSelectTaskDate: (LocalDate) -> Unit,
 ) {
+
     var selectedDay by mutableIntStateOf(currentDay)
     var selectedMonth by mutableIntStateOf(currentMonth)
     var selectedYear by mutableIntStateOf(currentYear)
@@ -95,6 +95,59 @@ fun CustomDatePicker(
             )
         }
     }
+}
+
+@Composable
+fun DatePickerUtil(
+    modifier: Modifier = Modifier,
+    height: Dp,
+    onSelectDateDay: (String) -> Unit,
+    onSelectDateMonth: (Int) -> Unit,
+    onSelectDateYear: (String) -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height),
+    ) {
+        InfiniteItemsPicker(
+            items = days,
+            firstIndex = Int.MAX_VALUE / 2 + (currentDay - 2),
+            onItemSelected = { onSelectDateDay(it) },
+            textStyle = MaterialTheme.typography.titleLarge.copy(
+                fontSize = sp26,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+        )
+        InfiniteItemsPicker(
+            items = monthsNames,
+            firstIndex = Int.MAX_VALUE / 2 - 4 + currentMonth,
+            onItemSelected = {
+                onSelectDateMonth(parseMonthNamesToInt(it))
+            },
+            textStyle = MaterialTheme.typography.titleLarge.copy(
+                fontSize = sp26,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+        )
+        InfiniteItemsPicker(
+            items = years,
+            firstIndex = Int.MAX_VALUE / 2 + (currentYear - 1967),
+            onItemSelected = { onSelectDateYear(it) },
+            textStyle = MaterialTheme.typography.titleLarge.copy(
+                fontSize = sp26,
+                fontWeight = FontWeight.Medium,
+                color = Color.White,
+            )
+        )
+    }
+}
+
+fun parseMonthNamesToInt(monthName: String): Int {
+    return monthsNames.indexOf(monthName)+1
 }
 
 @SuppressLint("UnrememberedMutableState")
@@ -145,59 +198,6 @@ fun CustomTimePicker(
 }
 
 @Composable
-fun DatePickerUtil(
-    modifier: Modifier = Modifier,
-    height: Dp,
-    onSelectDateDay: (String) -> Unit,
-    onSelectDateMonth: (Int) -> Unit,
-    onSelectDateYear: (String) -> Unit,
-) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(height),
-    ) {
-        InfiniteItemsPicker(
-            items = days,
-            firstIndex = 0,
-            onItemSelected = {
-                onSelectDateDay(it)
-            },
-            textStyle = MaterialTheme.typography.titleLarge.copy(
-                fontSize = sp26,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-        )
-        InfiniteItemsPicker(
-            items = monthsNames,
-            firstIndex = 0,
-            onItemSelected = {
-                onSelectDateMonth(parseMonthNamesToInt(it))
-            },
-            textStyle = MaterialTheme.typography.titleLarge.copy(
-                fontSize = sp26,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-        )
-        InfiniteItemsPicker(
-            items = years,
-            firstIndex = 0,
-            onItemSelected = {
-                onSelectDateYear(it)
-            },
-            textStyle = MaterialTheme.typography.titleLarge.copy(
-                fontSize = sp26,
-                fontWeight = FontWeight.Medium,
-                color = Color.White,
-            )
-        )
-    }
-}
-
-@Composable
 fun TimePickerUtil(
     onSelectHours: (String) -> Unit,
     onSelectMinutes: (String) -> Unit,
@@ -237,6 +237,3 @@ fun TimePickerUtil(
     }
 }
 
-fun parseMonthNamesToInt(monthName: String): Int {
-    return monthName.indexOf(monthName)
-}

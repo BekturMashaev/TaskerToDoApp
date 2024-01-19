@@ -6,6 +6,7 @@ data class AddTaskUiState (
     var taskText:String?= null,
     var taskDate:String?= null,
     var taskTime:String?= null,
+    var taskColor:String?= null,
     var taskCategory:CategoryModel?=null,
     var taskCategoryList: List<CategoryModel>?= emptyList()
 )
