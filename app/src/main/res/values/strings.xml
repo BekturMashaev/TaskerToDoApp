@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">TaskerToDo</string>
+    <string name="main_screen_route">MainScreen</string>
+    <string name="add_task_screen_route">AddTaskScreen</string>
+    <string name="add_category_screen_route">AddCategoryScreen</string>
+    <string name="main_screen_title">Today</string>
+    <string name="task_txt">Task</string>
+    <string name="list_txt">List</string>
+    <string name="cancel_title_txt">Cancel</string>
+    <string name="done_title_txt">Done</string>
+    <string name="inbox_txt">Inbox</string>
+    <string name="what_do_you_want_to_do">What do you want to do?</string>
+    <string name="what_do_you_want_to_do_txt">What do you want to do?</string>
+    <string name="item_title_inbox_txt">Work</string>
+    <string name="confirm_btn_txt">Confirm</string>
+    <string name="fill_in_all_text">Fill in all text fields</string>
+    <string name="select_date">Select a date</string>
+    <string name="select_color">Select color</string>
+    <string name="select_time">Select a time</string>
+    <string name="select_category">Select a time</string>
+    <string name="work_txt">Work</string>
+
+
+    <string name="nothing"/>
+</resources>
