@@ -22,4 +22,6 @@
 
 
     <string name="nothing"/>
+    <string name="choose_a_category">Choose a category</string>
+    <string name="lists">Lists</string>
 </resources>

@@ -6,7 +6,7 @@ import com.example.taskertodo.domain.use_cases.category.GetAllCategoriesUseCase
 import com.example.taskertodo.presentation.screens.screen_add_task.AddTaskUiState
 
 data class MainScreenUiState(
-    val task:List<TaskModel> = emptyList(),
+    val tasks:List<TaskModel> ?= emptyList(),
     val taskCategory:List<Pair<TaskModel,Int>> = emptyList(),
     val selectCategory:Set<TaskModel> = emptySet(),
     val categories:List<CategoryModel>?= emptyList()

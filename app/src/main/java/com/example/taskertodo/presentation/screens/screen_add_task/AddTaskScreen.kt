@@ -4,9 +4,10 @@
 package com.example.taskertodo.presentation.screens.screen_add_task
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,6 +19,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,28 +42,37 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.taskertodo.R
-import com.example.taskertodo.R.string.select_category
 import com.example.taskertodo.data.models.CategoryModel
 import com.example.taskertodo.presentation.components.CategoryList
 import com.example.taskertodo.presentation.components.CircleColorComponent
 import com.example.taskertodo.presentation.components.CustomDatePicker
 import com.example.taskertodo.presentation.components.CustomTimePicker
+import com.example.taskertodo.presentation.components.parse
 import com.example.taskertodo.presentation.screens.screen_add_task.model.AddTaskBottomMenuActions
 import com.example.taskertodo.presentation.theme.EMPTY_STRING
 import com.example.taskertodo.presentation.theme.TaskerBlue
 import com.example.taskertodo.presentation.theme.TaskerGray
 import com.example.taskertodo.presentation.theme.dp12
+import com.example.taskertodo.presentation.theme.dp25
 import com.example.taskertodo.presentation.theme.dp3
+import com.example.taskertodo.presentation.theme.dp4
 import com.example.taskertodo.presentation.theme.dp5
 import com.example.taskertodo.presentation.theme.dp6
 import com.example.taskertodo.presentation.theme.dp60
@@ -65,7 +81,7 @@ import com.example.taskertodo.presentation.theme.sp18
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnrememberedMutableState")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AddTaskScreen(
     modifier: Modifier = Modifier,
@@ -76,11 +92,18 @@ fun AddTaskScreen(
     onUpdateTaskTitle: (String) -> Unit,
     onUpdateLocalTime: (String) -> Unit,
     selectCategory: (CategoryModel) -> Unit,
+    onUpdateTaskColor: (String) -> Unit
 ) {
     var bottomMenuClickState by remember {
-        mutableStateOf(AddTaskBottomMenuActions.TIMEPICKER)
+        mutableStateOf(AddTaskBottomMenuActions.DEFAULT)
     }
     val context = LocalContext.current
+    val source = remember {
+        MutableInteractionSource()
+    }
+    val controller = LocalSoftwareKeyboardController.current
+    val isPressed: Boolean by source.collectIsPressedAsState()
+
     Scaffold(topBar = {
         TopAppBar(
             title = {
@@ -110,7 +133,7 @@ fun AddTaskScreen(
                         else if (uiState.taskCategory == null)
                             Toast.makeText(
                                 context,
-                                context.getString(select_category),
+                                context.getString(R.string.choose_a_category),
                                 Toast.LENGTH_SHORT
                             ).show()
                         else if (uiState.taskDate.isNullOrEmpty())
@@ -126,7 +149,7 @@ fun AddTaskScreen(
                                 Toast.LENGTH_SHORT
                             ).show()
                         else {
-                            onSaveClick
+                            onSaveClick()
                             navController.popBackStack()
                         }
                     },
@@ -142,58 +165,70 @@ fun AddTaskScreen(
             },
         )
     },
-        content = { innerpading ->
+        content = { innerPadding ->
             TaskTextField(
-                innerPadding = innerpading,
+                innerPadding = innerPadding,
                 onUpdateStringTitle = {
                     onUpdateTaskTitle(it)
                 },
-                uiState = uiState
+                uiState = uiState,
+                source = source
             )
         }, bottomBar = {
+            if (isPressed) {
+                bottomMenuClickState = AddTaskBottomMenuActions.DEFAULT
+            }
+            val height = if (bottomMenuClickState != AddTaskBottomMenuActions.DEFAULT) {
+                modifier.fillMaxHeight(0.6f)
+            } else {
+                modifier.wrapContentHeight()
+            }
             Column(
-                modifier = modifier.fillMaxHeight(0.6f)
+                modifier = height
             ) {
                 TaskBottomMenu(
                     onClick = {
                         bottomMenuClickState = it
-                    }
+                    },
+                    onChangeControllerStateClick = {
+                        if (it) controller?.hide()
+                    },
+                    uiState = uiState,
                 )
-                AnimatedVisibility(
-                    visible = bottomMenuClickState == AddTaskBottomMenuActions.CHOOSECATEGORY,
-                    modifier = Modifier.fillMaxHeight()
-                ) {
-                    Log.d("AAA", "$bottomMenuClickState")
-                    uiState.taskCategoryList?.let { it ->
-                        CategoryList(
-                            categoryList = it,
-                            innerPadding = PaddingValues(),
-                            selectCategory = {
-                                selectCategory(it)
+                AnimatedVisibility(visible = bottomMenuClickState != AddTaskBottomMenuActions.DEFAULT) {
+                    AnimatedVisibility(visible = bottomMenuClickState == AddTaskBottomMenuActions.DATEPICKER) {
+                        CustomDatePicker(
+                            onSelectTaskDate = {
+                                onUpdateLocalDate(
+                                    "${it.year}.${it.monthValue}.${it.dayOfMonth}",
+                                )
+                            },
+                        )
+                    }
+                    AnimatedVisibility(visible = bottomMenuClickState == AddTaskBottomMenuActions.TIMEPICKER) {
+                        CustomTimePicker(
+                            onSelectTaskTime = {
+                                onUpdateLocalTime(
+                                    "${it.hour}:${it.minute}"
+                                )
                             }
                         )
                     }
-                }
-                AnimatedVisibility(visible = bottomMenuClickState == AddTaskBottomMenuActions.DATEPICKER) {
-                    Log.d("AAA", "$bottomMenuClickState")
-                    CustomDatePicker(
-                        onSelectTaskDate = {
-                            onUpdateLocalDate(
-                                "${it.dayOfMonth}.${it.month}.${it.year}",
+                    AnimatedVisibility(
+                        visible = bottomMenuClickState == AddTaskBottomMenuActions.CHOOSECATEGORY,
+                        modifier = Modifier.fillMaxHeight()
+                    ) {
+                        uiState.taskCategoryList?.let { it ->
+                            CategoryList(
+                                categoryList = it,
+                                selectCategory = {
+                                    selectCategory(it)
+                                    onUpdateTaskColor(it.color)
+                                },
+                                isListForMainScreen = false
                             )
-                        },
-                    )
-                }
-                AnimatedVisibility(visible = bottomMenuClickState == AddTaskBottomMenuActions.TIMEPICKER) {
-                    Log.d("AAA", "$bottomMenuClickState")
-                    CustomTimePicker(
-                        onSelectTaskTime = {
-                            onUpdateLocalTime(
-                                "${it.hour}:${it.minute}"
-                            )
-                            Log.d("AAA", "$it")
                         }
-                    )
+                    }
                 }
             }
         }
@@ -207,7 +242,9 @@ fun TaskTextField(
     innerPadding: PaddingValues,
     onUpdateStringTitle: (String) -> Unit,
     uiState: AddTaskUiState,
+    source: MutableInteractionSource,
 ) {
+    val focusManager = LocalFocusManager.current
     var textFieldState by remember {
         mutableStateOf(EMPTY_STRING)
     }
@@ -252,16 +289,72 @@ fun TaskTextField(
                             else TaskerGray
                         )
                     },
+                    interactionSource = source,
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            focusManager.moveFocus(FocusDirection.Down)
+                        }
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done
+                    ),
+                    trailingIcon = {
+                        if (!uiState.taskColor.isNullOrBlank()) Card(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .clip(CircleShape),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.parse(
+                                    uiState.taskColor!!
+                                )
+                            ),
+                        ) {
+                        }
+                    }
                 )
-                Row {
-                    uiState.taskDate?.let {
+                Row(
+                    modifier = modifier.fillMaxWidth()
+                ) {
+                    if (!uiState.taskDate.isNullOrBlank()) {
+                        IconButton(
+                            modifier = modifier
+                                .size(dp25),
+                            onClick = {}
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.calendar),
+                                contentDescription = null,
+                                tint = Color.Gray
+                            )
+                        }
                         Text(
-                            text = it
+                            modifier = modifier.padding(dp4),
+                            text = uiState.taskDate ?: EMPTY_STRING,
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center,
                         )
                     }
-                    uiState.taskTime?.let {
+                    if (!uiState.taskTime.isNullOrBlank()) {
+                        IconButton(
+                            modifier = modifier
+                                .size(dp25),
+                            onClick = {}
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.alarm),
+                                contentDescription = null,
+                                tint = Color.Gray
+                            )
+                        }
                         Text(
-                            text = it
+                            modifier = modifier.padding(dp4),
+                            text = uiState.taskTime ?: EMPTY_STRING,
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center,
                         )
                     }
                 }
@@ -273,6 +366,8 @@ fun TaskTextField(
 @Composable
 fun TaskBottomMenu(
     onClick: (AddTaskBottomMenuActions) -> Unit,
+    onChangeControllerStateClick: (Boolean) -> Unit,
+    uiState: AddTaskUiState,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -288,31 +383,43 @@ fun TaskBottomMenu(
             IconButton(
                 onClick = {
                     onClick(AddTaskBottomMenuActions.DATEPICKER)
+                    onChangeControllerStateClick(true)
                 },
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.calendar),
                     contentDescription = null,
-                    tint = if (isSystemInDarkTheme()) Color.White
-                    else TaskerGray
+                    tint = if (uiState.taskDate.isNullOrEmpty()) {
+                        if (isSystemInDarkTheme()) Color.White
+                        else TaskerGray
+                    } else {
+                        TaskerBlue
+                    }
                 )
             }
             IconButton(onClick = {
                 onClick(AddTaskBottomMenuActions.TIMEPICKER)
+                onChangeControllerStateClick(true)
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.alarm),
                     contentDescription = null,
-                    tint = if (isSystemInDarkTheme()) Color.White
-                    else TaskerGray
+                    tint = if (uiState.taskTime.isNullOrEmpty()) {
+                        if (isSystemInDarkTheme()) Color.White
+                        else TaskerGray
+                    } else {
+                        TaskerBlue
+                    }
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
             TextButton(onClick = {
                 onClick(AddTaskBottomMenuActions.CHOOSECATEGORY)
+                onChangeControllerStateClick(true)
             }) {
                 Text(
-                    text = stringResource(R.string.inbox_txt),
+                    text = if (uiState.taskCategory == null) stringResource(R.string.inbox_txt)
+                    else uiState.taskCategory?.title!!,
                     fontSize = sp15,
                     color = if (isSystemInDarkTheme()) Color.White
                     else TaskerGray,
@@ -322,7 +429,10 @@ fun TaskBottomMenu(
                     modifier = modifier
                         .size(dp12)
                         .padding(start = dp3, top = dp3),
-                    color = TaskerBlue
+                    color = if (!uiState.taskColor.isNullOrBlank()) Color.parse(
+                        uiState.taskColor!!
+                    )
+                    else TaskerBlue
                 )
             }
         }

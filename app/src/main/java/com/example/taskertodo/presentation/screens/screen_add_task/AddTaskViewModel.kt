@@ -1,5 +1,6 @@
 package com.example.taskertodo.presentation.screens.screen_add_task
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,6 +25,7 @@ class AddTaskViewModel : ViewModel() {
     init {
         getAllCategoriesUseCase().onEach {
             uiState = uiState.copy(taskCategoryList = it)
+            Log.d("AAA","category: $it \n")
         }.launchIn(viewModelScope)
     }
 
@@ -51,26 +53,22 @@ class AddTaskViewModel : ViewModel() {
         )
     }
 
+    fun updateTaskCategoryColor(color: String) {
+        uiState = uiState.copy(
+            taskColor = color
+        )
+    }
+
     fun addNewTask() {
-        if (uiState.taskText.isNullOrEmpty()) {
-            return
-        }
-        if (uiState.taskDate.isNullOrEmpty()) {
-            return
-        }
-        if (uiState.taskTime.isNullOrEmpty()) {
-            return
-        }
-        if (uiState.taskCategory == null) {
-            return
-        }
         val task = TaskModel(
-            taskText = uiState.taskText!!,
-            taskDate = uiState.taskDate!!,
-            taskTime = uiState.taskTime!!,
-            categoryId = uiState.taskCategory?.id!!,
-            taskId = UUID.randomUUID().toString()
+            taskText = uiState.taskText.toString(),
+            taskDate = uiState.taskDate.toString(),
+            taskTime = uiState.taskTime.toString(),
+            categoryId = uiState.taskCategory?.id.toString(),
+            taskId = UUID.randomUUID().toString(),
+            categoryColor = uiState.taskColor.toString(),
         )
         addNewTaskUseCase.addNewTask(task)
+        uiState = AddTaskUiState()
     }
 }

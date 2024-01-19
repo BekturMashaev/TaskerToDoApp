@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface TaskRepository {
     fun addNewTask(taskModel: TaskModel)
 
-    fun getAllTasks():List<TaskModel>
+    fun getAllTasks(): Flow<List<TaskModel>>
 
     fun addCategory(categoryModel: CategoryModel)
     fun getAllCategories(): Flow<List<CategoryModel>>

@@ -16,7 +16,7 @@ interface TaskerDao {
     fun addNewTask(taskModelCache: TaskModelCache)
 
     @Query("SELECT * FROM task_table_name")
-    fun getAllTasks():List<TaskModelCache>
+    fun getAllTasks():Flow<List<TaskModelCache>>
 
     /** categories **/
     @Insert(onConflict = OnConflictStrategy.REPLACE)

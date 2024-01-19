@@ -1,4 +1,4 @@
-package com.example.composetaskerapp.presentation.components
+package com.example.taskerapp.presentation.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer

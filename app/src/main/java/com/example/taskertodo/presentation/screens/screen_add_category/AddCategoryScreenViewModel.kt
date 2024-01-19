@@ -12,7 +12,7 @@ class AddCategoryScreenViewModel : ViewModel() {
     private val repository = TaskRepositoryImpl()
     private val addNewCategoryUseCase = AddNewCategoryUseCaseImpl(repository)
 
-    var uiState = mutableStateOf(AddCategoryUiState())
+    private var uiState = mutableStateOf(AddCategoryUiState())
     fun updateCategoryTitle(title: String) {
         uiState.value = uiState.value.copy(
             categoryTitle = title
